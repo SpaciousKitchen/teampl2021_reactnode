@@ -28,24 +28,20 @@ router.get("/auth", auth, (req, res) => {
 });
 
 router.post("/register", async (req, res, next) => {
-  console.log("email router ");
   console.log(req.body);
 
   const findUser = await User.findOne({ where: { userId: req.body.email } });
-  console.log(findUser);
+
   if (findUser) {
-    return res.status(403).send({ message: "이미 존재하는 아이디입니다." });
+    return res
+      .status(403)
+      .send({ loginSuccess: false, message: "이미 존재하는 아이디입니다." });
   } else {
     const passwordHash = bcrypt.hashSync(req.body.password, 8);
-    const createUser = await User.create({
+    await User.create({
       userId: req.body.email,
       password: passwordHash,
       name: req.body.name,
-    });
-
-    const newUser = await User.findOne({
-      where: { id: createUser.id },
-      attributes: ["id", "userId", "name", "provider"],
     });
 
     let transporter = nodemailer.createTransport({
@@ -80,7 +76,8 @@ router.post("/register", async (req, res, next) => {
         console.log("success");
       }
     });
-    return res.status(201).send(newUser);
+
+    return res.status(201).send({ loginSuccess: true });
   }
 });
 
