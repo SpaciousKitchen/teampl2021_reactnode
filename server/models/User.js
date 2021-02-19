@@ -15,13 +15,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(50),
         allowNull: false,
       },
-      email: {
-        type: DataTypes.STRING(100),
-        allowNull: false,
-        unique: true,
-      },
       provider: {
         type: DataTypes.STRING(30),
+        allowNull: true,
+      },
+      authKey: {
+        type: DataTypes.BOOLEAN,
         allowNull: true,
       },
     },

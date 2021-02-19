@@ -1,10 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const { User } = require("../models/User");
-
+const { User } = require("../models");
+const bcrypt = require("bcrypt");
 const { auth } = require("../middleware/auth");
-
+const nodemailer = require("nodemailer");
 const async = require("async");
+const dotenv = require("dotenv");
+dotenv.config();
 
 //=================================
 //             User
@@ -25,15 +27,28 @@ router.get("/auth", auth, (req, res) => {
   });
 });
 
-router.post("/register", (req, res) => {
-  const user = new User(req.body);
+router.post("/register", async (req, res, next) => {
+  console.log("email router ");
+  console.log(req.body);
 
-  user.save((err, doc) => {
-    if (err) return res.json({ success: false, err });
-    return res.status(200).json({
-      success: true,
+  const findUser = await User.findOne({ where: { userId: req.body.email } });
+  console.log(findUser);
+  if (findUser) {
+    return res.status(403).send({ message: "이미 존재하는 아이디입니다." });
+  } else {
+    const passwordHash = bcrypt.hashSync(req.body.password, 8);
+    const createUser = await User.create({
+      userId: req.body.email,
+      password: passwordHash,
+      name: req.body.name,
     });
-  });
+
+    const newUser = await User.findOne({
+      where: { id: createUser.id },
+      attributes: ["id", "userId", "name", "provider"],
+    });
+    return res.status(201).send(newUser);
+  }
 });
 
 router.post("/login", (req, res) => {
