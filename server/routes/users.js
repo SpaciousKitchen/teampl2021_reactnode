@@ -47,6 +47,39 @@ router.post("/register", async (req, res, next) => {
       where: { id: createUser.id },
       attributes: ["id", "userId", "name", "provider"],
     });
+
+    let transporter = nodemailer.createTransport({
+      service: process.env.MAIL_SERVICE,
+      auth: {
+        user: process.env.MAIL_USER, // generated ethereal user
+        pass: process.env.MAIL_PASS, // generated ethereal password
+      },
+    });
+
+    const authUrl =
+      process.env.registerSuccessUrl +
+      req.body.email +
+      "&" +
+      "token=" +
+      process.env.emailToken;
+
+    let message = {
+      from: `React Shop <${process.env.MAIL_USER}>`, // sender address
+      to: req.body.email, // list of receivers
+      subject: "안녕하세요. 이메일 인증을 완료해주세요", // Subject line
+      html: `<p>안녕하세요.
+    React Shop 에서 가입하신 이메일 계정 확인을 위한 인증 메일입니다.
+    아래 버튼을 클릭하여 계정 인증을 완료해 주세요.</p>
+    <a href=${authUrl}>인증 링크 바로가기</a>`, // html body
+    };
+
+    transporter.sendMail(message, (err, info) => {
+      if (err) {
+        console.log(err);
+      } else {
+        console.log("success");
+      }
+    });
     return res.status(201).send(newUser);
   }
 });
