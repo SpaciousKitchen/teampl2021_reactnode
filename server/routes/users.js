@@ -69,6 +69,27 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
-router.post("/login", signupAuth, (req, res) => {});
+router.get("/mailauth", async (req, res) => {
+  try {
+    const findUser = await User.findOne({ where: { userId: req.query.email } });
+    await User.update(
+      { authToken: req.query.token },
+      {
+        where: {
+          id: findUser.id,
+        },
+      }
+    );
+    res.redirect(process.env.registerAuthSuccessUrl);
+  } catch (error) {
+    return res
+      .status(401)
+      .send({ loginSuccess: false, message: "존재 하지 않는 유저입니다." }); //디비에서 찾을수 없을 경우
+  }
+});
+
+router.post("/login", signupAuth, (req, res) => {
+  console.log("login 완료");
+});
 
 module.exports = router;
