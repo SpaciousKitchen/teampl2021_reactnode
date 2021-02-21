@@ -87,13 +87,10 @@ const RegisterPage = (props) => {
             (response) => {
               if (response.payload.signupSuccess) {
                 countDownNotification();
-              } else {
-                console.log(response);
-                alert(response.payload.message);
               }
             },
             (err) => {
-              console.log(err);
+              alert(err.response.data.message);
             }
           );
 
